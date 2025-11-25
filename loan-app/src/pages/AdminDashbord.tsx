@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, RefreshCw, LogOut, TrendingUp, Users, DollarSign, Clock } from "lucide-react";
+import { Search, RefreshCw, LogOut, TrendingUp, Users, DollarSign, Clock, X, Eye } from "lucide-react";
 
 interface Loan {
   _id: string;
@@ -30,6 +30,8 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [modalImage, setModalImage] = useState<string | null>(null);
+  const [modalTitle, setModalTitle] = useState<string>("");
 
   const ADMIN_API_KEY = "supersecretadminkey123";
   const ADMIN_PASSCODE = "admin2024";
@@ -118,6 +120,16 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const openImageModal = (imageUrl: string, title: string) => {
+    setModalImage(imageUrl);
+    setModalTitle(title);
+  };
+
+  const closeImageModal = () => {
+    setModalImage(null);
+    setModalTitle("");
+  };
+
   const filteredLoans = loans.filter((loan) => {
     const matchesSearch = loan.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       loan.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -137,7 +149,6 @@ const AdminDashboard: React.FC = () => {
     return styles[status as keyof typeof styles] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
-  // Statistics
   const stats = {
     total: loans.length,
     pending: loans.filter(l => l.status === "pending").length,
@@ -146,14 +157,13 @@ const AdminDashboard: React.FC = () => {
     totalAmount: loans.reduce((sum, l) => sum + l.loanAmount, 0),
   };
 
-  // Login Modal
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center px-4">
         <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
           <div className="text-center mb-8">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <span className="text-4xl text-white">🔐</span>
+              <span className="text-4xl">🔐</span>
             </div>
             <h2 className="text-3xl font-bold text-gray-800">Admin Portal</h2>
             <p className="text-gray-500 mt-2">Sterling & Co Financials</p>
@@ -190,9 +200,40 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  // Main Dashboard
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Image Modal */}
+      {modalImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden">
+            <div className="bg-gray-100 p-4 flex justify-between items-center border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800">{modalTitle}</h3>
+              <button
+                onClick={closeImageModal}
+                className="text-gray-500 hover:text-gray-700 transition"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-4 bg-gray-50 flex justify-center">
+              <img 
+                src={modalImage} 
+                alt={modalTitle}
+                className="max-h-96 object-contain rounded-lg"
+              />
+            </div>
+            <div className="p-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={closeImageModal}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white shadow-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -349,9 +390,27 @@ const AdminDashboard: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-2">
-                          <a href={loan.idFront} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 text-xs underline">ID Front</a>
-                          <a href={loan.idBack} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 text-xs underline">ID Back</a>
-                          <a href={loan.ssnFront} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 text-xs underline">SSN</a>
+                          <button
+                            onClick={() => openImageModal(loan.idFront, `${loan.fullName} - ID Front`)}
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-medium hover:bg-blue-50 px-2 py-1 rounded transition"
+                          >
+                            <Eye className="w-3 h-3" />
+                            ID Front
+                          </button>
+                          <button
+                            onClick={() => openImageModal(loan.idBack, `${loan.fullName} - ID Back`)}
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-medium hover:bg-blue-50 px-2 py-1 rounded transition"
+                          >
+                            <Eye className="w-3 h-3" />
+                            ID Back
+                          </button>
+                          <button
+                            onClick={() => openImageModal(loan.ssnFront, `${loan.fullName} - SSN Front`)}
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-medium hover:bg-blue-50 px-2 py-1 rounded transition"
+                          >
+                            <Eye className="w-3 h-3" />
+                            SSN
+                          </button>
                         </div>
                       </td>
                       <td className="px-6 py-4">

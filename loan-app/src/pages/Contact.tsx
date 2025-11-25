@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Phone, Mail, MapPin, Clock, Send, MessageCircle, CheckCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Send, MessageCircle, CheckCircle, Facebook, Instagram } from "lucide-react";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -24,14 +24,14 @@ export default function Contact() {
     {
       icon: Phone,
       title: "Phone",
-      detail: "+234 813 450 2723",
+      detail: "+1 865 249 9849",
       subdtail: "Mon-Fri 9am-6pm",
       color: "from-blue-500 to-blue-600"
     },
     {
       icon: MessageCircle,
       title: "WhatsApp",
-      detail: "+234 813 450 2723",
+      detail: "+1 865 249 9849",
       subdtail: "Quick responses 24/7",
       color: "from-green-500 to-green-600"
     },
@@ -45,7 +45,7 @@ export default function Contact() {
     {
       icon: MapPin,
       title: "Office",
-      detail: "Abuja, Nigeria",
+      detail: "Los Angeles, USA",
       subdtail: "Visit us by appointment",
       color: "from-blue-600 to-slate-500"
     }
@@ -55,6 +55,30 @@ export default function Contact() {
     { q: "How long does approval take?", a: "Most applications are approved within 24-48 hours." },
     { q: "What documents do I need?", a: "Valid ID, proof of income, and bank statements." },
     { q: "Can I pay off my loan early?", a: "Yes, with no prepayment penalties." }
+  ];
+
+  const socialLinks = [
+    {
+      icon: Facebook,
+      name: "Facebook",
+      url: "https://www.facebook.com/share/1ACNyZDj8Y/?mibextid=wwXIfr",
+      color: "hover:text-blue-600",
+      bgColor: "hover:bg-blue-50"
+    },
+    {
+      icon: Instagram,
+      name: "Instagram",
+      url: "https://www.instagram.com/sterlingandcofinancials?igsh=MTM5YjVoZ25wNG13Ng%3D%3D&utm_source=qr",
+      color: "hover:text-pink-600",
+      bgColor: "hover:bg-pink-50"
+    },
+    {
+      icon: Mail,
+      name: "Email",
+      url: "mailto:Sterlingandcofinancials@gmail.com",
+      color: "hover:text-red-600",
+      bgColor: "hover:bg-red-50"
+    }
   ];
 
   return (
@@ -197,7 +221,7 @@ export default function Contact() {
                   Contact us directly via WhatsApp for instant responses to your questions.
                 </p>
                 <a
-                  href="https://wa.me/2348134502723"
+                  href="https://wa.me/18652499849"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 bg-white text-blue-700 font-bold py-3 px-6 rounded-xl hover:shadow-xl transition-all duration-300"
@@ -205,6 +229,24 @@ export default function Contact() {
                   <MessageCircle className="w-5 h-5" />
                   Chat on WhatsApp
                 </a>
+              </div>
+
+              <div className="bg-white rounded-3xl p-8 shadow-xl border border-blue-100">
+                <h3 className="text-xl font-bold mb-6 text-gray-800">Connect With Us</h3>
+                <div className="flex gap-4 justify-center">
+                  {socialLinks.map((social, idx) => (
+                    <a
+                      key={idx}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={social.name}
+                      className={`p-4 rounded-xl transition-all duration-300 ${social.bgColor} text-gray-600 ${social.color}`}
+                    >
+                      <social.icon className="w-6 h-6" />
+                    </a>
+                  ))}
+                </div>
               </div>
 
               <div className="bg-white rounded-3xl p-8 shadow-xl border border-blue-100">
@@ -257,7 +299,7 @@ export default function Contact() {
               <div className="text-center">
                 <MapPin className="w-16 h-16 text-blue-600 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">Visit Our Office</h3>
-                <p className="text-gray-600">Abuja, Nigeria</p>
+                <p className="text-gray-600">Los Angeles, USA</p>
               </div>
             </div>
           </div>
