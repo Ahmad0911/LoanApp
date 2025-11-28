@@ -11,8 +11,8 @@ function Calculator() {
   useEffect(() => {
     const r = rate / 100 / 12;
     const n = term;
-    const payment = (amount * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-    setMonthly(payment.toFixed(2));
+    const calculatedPayment = (amount * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    setMonthly(calculatedPayment.toFixed(2));
   }, [amount, term, rate]);
 
   return (
@@ -28,7 +28,7 @@ function Calculator() {
             max="100000"
             step="1000"
             value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
+            onChange={(evt) => setAmount(Number(evt.target.value))}
             className="w-full h-2 bg-gradient-to-r from-blue-400 to-slate-400 rounded-lg appearance-none cursor-pointer"
           />
         </div>
@@ -43,7 +43,7 @@ function Calculator() {
             max="60"
             step="6"
             value={term}
-            onChange={(e) => setTerm(Number(e.target.value))}
+            onChange={(evt) => setTerm(Number(evt.target.value))}
             className="w-full h-2 bg-gradient-to-r from-blue-400 to-slate-400 rounded-lg appearance-none cursor-pointer"
           />
         </div>
@@ -58,7 +58,7 @@ function Calculator() {
             max="15"
             step="0.5"
             value={rate}
-            onChange={(e) => setRate(Number(e.target.value))}
+            onChange={(evt) => setRate(Number(evt.target.value))}
             className="w-full h-2 bg-gradient-to-r from-blue-400 to-slate-400 rounded-lg appearance-none cursor-pointer"
           />
         </div>
@@ -78,11 +78,20 @@ function Calculator() {
 
 export default function Home() {
   const [scrollY, setScrollY] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
+    const handleMouseMove = (evt) => {
+      setMousePosition({ x: evt.clientX, y: evt.clientY });
+    };
+    
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
   }, []);
 
   const features = [
@@ -106,7 +115,119 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50 to-slate-100 relative overflow-hidden">
+      {/* Animated Floating Background */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        {/* Large floating orbs - Intermixed blue and silver */}
+        <div 
+          className="absolute w-96 h-96 bg-gradient-to-br from-blue-400/25 via-gray-400/30 to-slate-400/25 rounded-full blur-3xl animate-float"
+          style={{
+            top: '10%',
+            left: '5%',
+            animation: 'float 20s ease-in-out infinite',
+            transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`
+          }}
+        />
+        <div 
+          className="absolute w-80 h-80 bg-gradient-to-br from-slate-500/30 via-blue-300/25 to-gray-500/25 rounded-full blur-3xl animate-float-delay"
+          style={{
+            top: '60%',
+            right: '10%',
+            animation: 'float 25s ease-in-out infinite 5s',
+            transform: `translate(${mousePosition.x * -0.015}px, ${mousePosition.y * -0.015}px)`
+          }}
+        />
+        <div 
+          className="absolute w-72 h-72 bg-gradient-to-br from-gray-400/30 via-blue-400/25 to-slate-500/25 rounded-full blur-3xl animate-float"
+          style={{
+            bottom: '15%',
+            left: '15%',
+            animation: 'float 30s ease-in-out infinite 10s',
+            transform: `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`
+          }}
+        />
+        
+        {/* Medium floating elements - Silver-blue blend */}
+        <div 
+          className="absolute w-64 h-64 bg-gradient-to-br from-blue-500/30 via-slate-400/35 to-gray-400/30 rounded-full blur-2xl animate-float-slow"
+          style={{
+            top: '40%',
+            left: '40%',
+            animation: 'float 18s ease-in-out infinite 3s'
+          }}
+        />
+        <div 
+          className="absolute w-56 h-56 bg-gradient-to-br from-gray-500/30 via-blue-400/30 to-slate-500/30 rounded-full blur-2xl animate-float-slow"
+          style={{
+            top: '20%',
+            right: '25%',
+            animation: 'float 22s ease-in-out infinite 7s'
+          }}
+        />
+        
+        {/* Accent orbs - Blue-silver transitions */}
+        <div 
+          className="absolute w-48 h-48 bg-gradient-to-br from-blue-300/25 via-gray-400/30 to-slate-400/25 rounded-full blur-2xl animate-pulse"
+          style={{
+            top: '70%',
+            left: '60%',
+            animationDuration: '4s'
+          }}
+        />
+        <div 
+          className="absolute w-40 h-40 bg-gradient-to-br from-slate-500/25 via-blue-300/20 to-gray-400/25 rounded-full blur-xl animate-pulse"
+          style={{
+            top: '30%',
+            left: '70%',
+            animationDuration: '5s',
+            animationDelay: '2s'
+          }}
+        />
+        
+        {/* Small shimmer particles */}
+        <div 
+          className="absolute w-32 h-32 bg-gradient-to-br from-gray-300/35 via-blue-200/30 to-slate-300/35 rounded-full blur-xl animate-pulse"
+          style={{
+            top: '50%',
+            right: '40%',
+            animationDuration: '3s',
+            animationDelay: '1s'
+          }}
+        />
+        <div 
+          className="absolute w-36 h-36 bg-gradient-to-br from-blue-400/20 via-slate-400/30 to-gray-300/25 rounded-full blur-xl animate-pulse"
+          style={{
+            bottom: '40%',
+            right: '15%',
+            animationDuration: '6s'
+          }}
+        />
+      </div>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(30px, -30px) scale(1.05); }
+          50% { transform: translate(-20px, 20px) scale(0.95); }
+          75% { transform: translate(20px, 30px) scale(1.02); }
+        }
+        
+        @keyframes float-delay {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(-25px, 25px) scale(1.03); }
+          50% { transform: translate(25px, -20px) scale(0.97); }
+          75% { transform: translate(-30px, -25px) scale(1.01); }
+        }
+        
+        @keyframes float-slow {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(20px, -25px) rotate(3deg); }
+          66% { transform: translate(-25px, 20px) rotate(-3deg); }
+        }
+      `}} />
+
+      {/* Content - add relative z-10 to stay above background */}
+      <div className="relative z-10">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div 
@@ -114,6 +235,25 @@ export default function Home() {
           style={{ transform: `translateY(${scrollY * 0.5}px)` }}
         />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
+        
+        {/* Silver/White patches scattered throughout the blue background */}
+        <div className="absolute top-10 left-20 w-40 h-40 bg-white/15 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '3s' }} />
+        <div className="absolute top-32 right-32 w-32 h-32 bg-gray-100/20 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '4s', animationDelay: '0.5s' }} />
+        <div className="absolute top-1/4 left-1/3 w-48 h-48 bg-white/12 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '1s' }} />
+        <div className="absolute top-1/3 right-1/4 w-36 h-36 bg-slate-200/20 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '4.5s', animationDelay: '1.5s' }} />
+        <div className="absolute top-1/2 left-1/4 w-44 h-44 bg-white/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '2s' }} />
+        <div className="absolute bottom-1/3 right-1/3 w-40 h-40 bg-gray-200/18 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '3.5s', animationDelay: '0.8s' }} />
+        <div className="absolute bottom-1/4 left-1/2 w-38 h-38 bg-white/14 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5.5s', animationDelay: '2.5s' }} />
+        <div className="absolute top-1/2 right-1/2 w-50 h-50 bg-slate-100/16 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s', animationDelay: '1.2s' }} />
+        <div className="absolute bottom-20 left-40 w-42 h-42 bg-white/11 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '3s' }} />
+        <div className="absolute top-20 left-1/2 w-34 h-34 bg-gray-100/17 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '3.8s', animationDelay: '0.3s' }} />
+        <div className="absolute bottom-32 right-1/4 w-46 h-46 bg-white/13 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4.8s', animationDelay: '1.8s' }} />
+        <div className="absolute top-2/3 left-1/3 w-35 h-35 bg-slate-200/15 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '4.2s', animationDelay: '2.2s' }} />
+        
+        {/* Additional floating elements for hero */}
+        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-blue-300/25 via-gray-400/25 to-slate-400/20 rounded-full blur-2xl animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-gradient-to-br from-slate-400/25 via-blue-300/20 to-gray-400/25 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 right-10 w-28 h-28 bg-gradient-to-br from-gray-300/30 via-blue-200/25 to-slate-300/25 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
         
         <div className="relative container mx-auto px-6 py-24 md:py-32">
           <div className="max-w-4xl mx-auto text-center">
@@ -304,6 +444,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
