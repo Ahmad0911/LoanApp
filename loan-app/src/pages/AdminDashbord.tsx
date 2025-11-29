@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search, RefreshCw, LogOut, TrendingUp, Users, DollarSign, Clock, X, Eye } from "lucide-react";
 
 interface Loan {
@@ -33,6 +33,7 @@ const AdminDashboard: React.FC = () => {
   const [modalImage, setModalImage] = useState<string | null>(null);
   const [modalTitle, setModalTitle] = useState<string>("");
 
+  const BASE_URL = "https://sterling-financials-backend.onrender.com/api/loans";
   const ADMIN_API_KEY = "supersecretadminkey123";
   const ADMIN_PASSCODE = "admin2024";
 
@@ -55,7 +56,7 @@ const AdminDashboard: React.FC = () => {
   const fetchLoans = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/loans", {
+      const response = await fetch(BASE_URL, {
         headers: {
           "x-api-key": ADMIN_API_KEY,
         },
@@ -75,7 +76,7 @@ const AdminDashboard: React.FC = () => {
   const updateLoanStatus = async (loanId: string, status: string) => {
     setActionLoading(loanId);
     try {
-      const response = await fetch(`http://localhost:5000/api/loans/${loanId}/status`, {
+      const response = await fetch(`${BASE_URL}/${loanId}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +103,7 @@ const AdminDashboard: React.FC = () => {
     
     setActionLoading(loanId);
     try {
-      const response = await fetch(`http://localhost:5000/api/loans/${loanId}`, {
+      const response = await fetch(`${BASE_URL}/${loanId}`, {
         method: "DELETE",
         headers: {
           "x-api-key": ADMIN_API_KEY,

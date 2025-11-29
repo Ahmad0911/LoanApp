@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Phone, Mail, MapPin, Clock, Send, MessageCircle, CheckCircle, Facebook, Instagram } from "lucide-react";
 
 export default function Contact() {

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { ArrowRight, Shield, Zap, TrendingUp, CheckCircle, Star, Clock, Award, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Shield, Zap, TrendingUp, Star, Clock, Award, ChevronRight } from "lucide-react";
 
 // Calculator Component (embedded)
 function Calculator() {
   const [amount, setAmount] = useState(10000);
   const [term, setTerm] = useState(12);
   const [rate, setRate] = useState(5.5);
-  const [monthly, setMonthly] = useState(0);
+  const [monthly, setMonthly] = useState("0");
 
   useEffect(() => {
     const r = rate / 100 / 12;
@@ -82,7 +83,7 @@ export default function Home() {
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
-    const handleMouseMove = (evt) => {
+    const handleMouseMove = (evt: MouseEvent) => {
       setMousePosition({ x: evt.clientX, y: evt.clientY });
     };
     
@@ -275,16 +276,19 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a
-                href="/apply"
+              <Link
+                to="/apply"
                 className="group bg-white text-blue-700 font-bold px-8 py-4 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center gap-2"
               >
                 Apply Now
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
-              <button className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white font-semibold px-8 py-4 rounded-full hover:bg-white/20 transition-all duration-300">
+              </Link>
+              <Link 
+                to="/about"
+                className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white font-semibold px-8 py-4 rounded-full hover:bg-white/20 transition-all duration-300"
+              >
                 Learn More
-              </button>
+              </Link>
             </div>
 
             {/* Floating Stats */}
@@ -345,10 +349,10 @@ export default function Home() {
           <Calculator />
           
           <div className="mt-12 text-center">
-            <a href="/apply" className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+            <Link to="/apply" className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:text-blue-700 transition-colors">
               Ready to apply? Get started now
               <ChevronRight className="w-5 h-5" />
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -396,13 +400,13 @@ export default function Home() {
           <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
             Join thousands of satisfied customers who trust Sterling & Co for their financial needs
           </p>
-          <a
-            href="/apply"
+          <Link
+            to="/apply"
             className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-10 py-5 rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300"
           >
             Start Your Application
             <ArrowRight className="w-5 h-5" />
-          </a>
+          </Link>
         </div>
       </section>
 

@@ -1,5 +1,4 @@
-import React from "react";
-import { Target, Eye, Heart, Shield, Lightbulb, Users, TrendingUp, Award, CheckCircle, Globe, Zap, Clock } from "lucide-react";
+import { Target, Eye, Heart, Shield, Lightbulb, Users, TrendingUp, Award, Globe, Zap, Clock } from "lucide-react";
 
 export default function About() {
   const coreValues = [
