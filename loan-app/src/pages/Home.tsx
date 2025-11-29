@@ -411,43 +411,43 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-gray-400 py-12 px-6">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="text-white font-bold text-lg mb-4">Sterling & Co</h3>
-              <p className="text-sm">Your trusted partner in financial solutions since 2010.</p>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Products</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Personal Loans</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Business Loans</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Home Loans</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Licenses</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            © {new Date().getFullYear()} Sterling & Co Financials. All rights reserved.
-          </div>
-        </div>
-      </footer>
+<footer className="bg-slate-900 text-gray-400 py-12 px-6">
+  <div className="container mx-auto max-w-6xl">
+    <div className="grid md:grid-cols-4 gap-8 mb-8">
+      <div>
+        <h3 className="text-white font-bold text-lg mb-4">Sterling & Co</h3>
+        <p className="text-sm">Your trusted partner in financial solutions since 2010.</p>
+      </div>
+      <div>
+        <h4 className="text-white font-semibold mb-4">Products</h4>
+        <ul className="space-y-2 text-sm">
+          <li><Link to="/loans" className="hover:text-white transition-colors">Personal Loans</Link></li>
+          <li><Link to="/loans" className="hover:text-white transition-colors">Business Loans</Link></li>
+          <li><Link to="/loans" className="hover:text-white transition-colors">Home Loans</Link></li>
+        </ul>
+      </div>
+      <div>
+        <h4 className="text-white font-semibold mb-4">Company</h4>
+        <ul className="space-y-2 text-sm">
+          <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+          <li><Link to="/contact" className="hover:text-white transition-colors">Careers</Link></li>
+          <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+        </ul>
+      </div>
+      <div>
+        <h4 className="text-white font-semibold mb-4">Legal</h4>
+        <ul className="space-y-2 text-sm">
+          <li><Link to="/about" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+          <li><Link to="/about" className="hover:text-white transition-colors">Terms of Service</Link></li>
+          <li><Link to="/about" className="hover:text-white transition-colors">Licenses</Link></li>
+        </ul>
+      </div>
+    </div>
+    <div className="border-t border-gray-800 pt-8 text-center text-sm">
+      © {new Date().getFullYear()} Sterling & Co Financials. All rights reserved.
+    </div>
+  </div>
+</footer>
       </div>
     </div>
   );
