@@ -32,6 +32,8 @@ export default function Apply() {
     loanDuration: "",
   });
 
+  const API_BASE_URL = "https://sterling-financials-backend.onrender.com/api/loans";
+
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
@@ -54,7 +56,7 @@ export default function Apply() {
       if (value) formPayload.append(key, value as string | Blob);
     });
 
-    const response = await fetch("http://localhost:5000/api/loans/apply", {
+    const response = await fetch(`${API_BASE_URL}/apply`, {
       method: "POST",
       body: formPayload,
     });
