@@ -34,8 +34,8 @@ const AdminDashboard: React.FC = () => {
   const [modalTitle, setModalTitle] = useState<string>("");
 
   const BASE_URL = "https://sterling-financials-backend.onrender.com/api/loans";
-  const ADMIN_API_KEY = "supersecretadminkey123";
   const ADMIN_PASSCODE = "admin2024";
+  const ADMIN_API_KEY = "supersecretadminkey123";
 
   const handleLogin = () => {
     if (passcode === ADMIN_PASSCODE) {
@@ -60,14 +60,15 @@ const AdminDashboard: React.FC = () => {
         headers: {
           "x-api-key": ADMIN_API_KEY,
         },
+        credentials: "include",
       });
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Failed to fetch loans");
-      setLoans(data.loans || []);
+      setLoans(data.loans || data || []);
       setError("");
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Failed to connect to backend");
     } finally {
       setLoading(false);
     }
@@ -82,6 +83,7 @@ const AdminDashboard: React.FC = () => {
           "Content-Type": "application/json",
           "x-api-key": ADMIN_API_KEY,
         },
+        credentials: "include",
         body: JSON.stringify({ status }),
       });
 
@@ -108,6 +110,7 @@ const AdminDashboard: React.FC = () => {
         headers: {
           "x-api-key": ADMIN_API_KEY,
         },
+        credentials: "include",
       });
 
       const data = await response.json();
