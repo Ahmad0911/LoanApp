@@ -51,6 +51,15 @@ export default function About() {
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
+            {/* Logo at the top */}
+            <div className="flex justify-center mb-8">
+              <img 
+                src="/SterlingLogo.png" 
+                alt="Sterling Logo" 
+                className="h-20 w-auto drop-shadow-2xl"
+              />
+            </div>
+
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm mb-6 border border-white/20">
               <Award className="w-4 h-4" />
               <span>Trusted Financial Partner Since 2010</span>
@@ -248,7 +257,15 @@ export default function About() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-white font-bold text-lg mb-4">Sterling & Co</h3>
+              {/* Logo in Footer */}
+              <div className="flex items-center gap-3 mb-4">
+                <img 
+                  src="/SterlingLogo.png" 
+                  alt="Sterling Logo" 
+                  className="h-10 w-auto"
+                />
+                <h3 className="text-white font-bold text-lg">Sterling & Co</h3>
+              </div>
               <p className="text-sm">Your trusted partner in financial solutions since 2010.</p>
             </div>
             <div>
