@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Phone, Mail, MapPin, Clock, Send, MessageCircle, CheckCircle, Facebook, Instagram } from "lucide-react";
+import { Send as Telegram } from "lucide-react";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -8,7 +9,17 @@ export default function Contact() {
     subject: "",
     message: ""
   });
+  const [showTelegramMessage, setShowTelegramMessage] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const handleCardClick = (url: string | null, title: string) => {
+    if (url === null && title === "Telegram") {
+      setShowTelegramMessage(true);
+      setTimeout(() => setShowTelegramMessage(false), 3000);
+    } else if (url) {
+      window.open(url, '_blank');
+    }
+  };
 
   const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,32 +33,36 @@ export default function Contact() {
 
   const contactInfo = [
     {
-      icon: Phone,
-      title: "Phone",
-      detail: "+1 865 249 9849",
-      subdtail: "Mon-Fri 9am-6pm",
-      color: "from-blue-500 to-blue-600"
+      icon: Facebook,
+      title: "Facebook",
+      detail: "Sterling & Co Financials",
+      subdtail: "Follow us for updates",
+      color: "from-blue-500 to-blue-600",
+      url: "https://www.facebook.com/share/1ACNyZDj8Y/?mibextid=wwXIfr"
     },
     {
-      icon: MessageCircle,
-      title: "WhatsApp",
-      detail: "+1 865 249 9849",
-      subdtail: "Quick responses 24/7",
-      color: "from-green-500 to-green-600"
+      icon: Instagram,
+      title: "Instagram",
+      detail: "@sterlingandcofinancials",
+      subdtail: "See our latest posts",
+      color: "from-pink-500 to-purple-600",
+      url: "https://www.instagram.com/sterlingandcofinancials?igsh=MTM5YjVoZ25wNG13Ng%3D%3D&utm_source=qr"
+    },
+    {
+      icon: Telegram,
+      title: "Telegram",
+      detail: "Sterling & Co Chat",
+      subdtail: "Coming soon",
+      color: "from-blue-400 to-blue-500",
+      url: null
     },
     {
       icon: Mail,
       title: "Email",
-      detail: "support@sterling-co.com",
+      detail: "Sterlingandcofinancials@gmail.com",
       subdtail: "We reply within 24 hours",
-      color: "from-slate-500 to-slate-600"
-    },
-    {
-      icon: MapPin,
-      title: "Office",
-      detail: "Los Angeles, USA",
-      subdtail: "Visit us by appointment",
-      color: "from-blue-600 to-slate-500"
+      color: "from-red-500 to-red-600",
+      url: "mailto:Sterlingandcofinancials@gmail.com"
     }
   ];
 
@@ -59,25 +74,25 @@ export default function Contact() {
 
   const socialLinks = [
     {
-      icon: Facebook,
-      name: "Facebook",
-      url: "https://www.facebook.com/share/1ACNyZDj8Y/?mibextid=wwXIfr",
+      icon: Phone,
+      name: "Phone",
+      url: "tel:+18652499849",
       color: "hover:text-blue-600",
       bgColor: "hover:bg-blue-50"
     },
     {
-      icon: Instagram,
-      name: "Instagram",
-      url: "https://www.instagram.com/sterlingandcofinancials?igsh=MTM5YjVoZ25wNG13Ng%3D%3D&utm_source=qr",
-      color: "hover:text-pink-600",
-      bgColor: "hover:bg-pink-50"
+      icon: MessageCircle,
+      name: "WhatsApp",
+      url: "https://wa.me/18652499849",
+      color: "hover:text-green-600",
+      bgColor: "hover:bg-green-50"
     },
     {
-      icon: Mail,
-      name: "Email",
-      url: "mailto:Sterlingandcofinancials@gmail.com",
-      color: "hover:text-red-600",
-      bgColor: "hover:bg-red-50"
+      icon: MapPin,
+      name: "Location",
+      url: "https://maps.google.com/?q=Los+Angeles+USA",
+      color: "hover:text-slate-600",
+      bgColor: "hover:bg-slate-50"
     }
   ];
 
@@ -112,13 +127,22 @@ export default function Contact() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {contactInfo.map((info, idx) => (
-              <div key={idx} className="bg-white rounded-2xl p-6 shadow-xl border border-blue-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+              <div 
+                key={idx} 
+                onClick={() => handleCardClick(info.url, info.title)}
+                className={`bg-white rounded-2xl p-6 shadow-xl border border-blue-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 ${info.url || info.title === "Telegram" ? "cursor-pointer" : ""}`}
+              >
                 <div className={`bg-gradient-to-br ${info.color} w-12 h-12 rounded-xl flex items-center justify-center mb-4`}>
                   <info.icon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-800 mb-2">{info.title}</h3>
                 <p className="text-gray-700 font-semibold text-sm mb-1">{info.detail}</p>
                 <p className="text-gray-500 text-xs">{info.subdtail}</p>
+                {showTelegramMessage && info.title === "Telegram" && (
+                  <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-2 text-center">
+                    <p className="text-blue-700 text-xs font-semibold">Coming Soon!</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
