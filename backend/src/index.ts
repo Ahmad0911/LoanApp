@@ -4,19 +4,22 @@ import dotenv from "dotenv";
 import connectDB from "./config/db";
 import loanRoutes from "./routes/loanRoutes";
 
-dotenv.config();
+dotenv.config({ path: '.env' });
 connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS Middleware
 app.use(
   cors({
-    origin: "https://sterling-financials.netlify.app", // exact frontend URL
+    origin: [
+      "https://sterling-financials.pages.dev",
+      "https://bd3e4bb1.sterling-financials.pages.dev",
+      "http://localhost:5173",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
-    credentials: true, // ✅ must be true since frontend uses 'credentials: include'
+    credentials: true,
   })
 );
 

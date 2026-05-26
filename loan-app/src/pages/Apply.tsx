@@ -97,30 +97,31 @@ const [otpError, setOtpError] = useState("");
 };
 
   const nextStepWithOtp = async () => {
-    if (step === 1) {
-      if (!otpVerified) {
-        // Send OTP first
-        setOtpLoading(true);
-        setOtpError("");
-        try {
-          const res = await fetch(`${API_BASE_URL}/send-otp`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: formData.email, fullName: formData.fullName }),
-          });
-          const data = await res.json();
-          if (data.success) setOtpSent(true);
-          else setOtpError(data.message);
-        } catch {
-          setOtpError("Failed to send OTP. Try again.");
-        } finally {
-          setOtpLoading(false);
-        }
-        return; // don't advance step yet
+  if (step === 1) {
+    if (!otpVerified) {
+      if (otpSent) return; // OTP already sent, waiting for verification
+      setOtpLoading(true);
+      setOtpError("");
+      try {
+        const res = await fetch(`${API_BASE_URL}/send-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.email, fullName: formData.fullName }),
+        });
+        const data = await res.json();
+        if (data.success) setOtpSent(true);
+        else setOtpError(data.message);
+      } catch {
+        setOtpError("Failed to send OTP. Try again.");
+      } finally {
+        setOtpLoading(false);
       }
+      return; // don't advance yet
     }
-    setStep((prev) => Math.min(prev + 1, 4));
-  };
+  }
+  // For steps 2, 3 or after OTP verified on step 1
+  setStep((prev) => Math.min(prev + 1, 4));
+};
 
   const steps = [
     { num: 1, title: "Personal Info", icon: User },
