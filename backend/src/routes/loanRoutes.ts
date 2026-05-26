@@ -1,6 +1,6 @@
 // 📂 src/routes/loanRoutes.ts
 import express from "express";
-import { createLoan, getAllLoans, updateLoanStatus, deleteLoan } from "../controllers/loanControllers";
+import { createLoan, getAllLoans, updateLoanStatus, sendOtp, verifyOtpRoute, deleteLoan } from "../controllers/loanControllers";
 import upload from "../middleware/upload";
 import { verifyAdminKey } from "../middleware/authAdmin";
 
@@ -26,5 +26,6 @@ router.patch("/:id/status", verifyAdminKey, updateLoanStatus);
 
 // ✅ Admin: Delete a loan application (Protected)
 router.delete("/:id", verifyAdminKey, deleteLoan);
-
+router.post("/send-otp", sendOtp);
+router.post("/verify-otp", verifyOtpRoute);
 export default router;

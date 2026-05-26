@@ -3,6 +3,8 @@ import { Request, Response } from "express";
 import Loan from "../models/Loan";
 import cloudinary from "../utils/cloudinary";
 import { sendApplicationConfirmation, sendApprovalEmail, sendRejectionEmail } from "../utils/emailService";
+import { saveOtp, verifyOtp } from "../utils/otpStore";
+import { sendOtpEmail } from "../utils/emailService";
 
 // ✅ Create Loan Application
 export const createLoan = async (req: Request, res: Response) => {
@@ -48,6 +50,7 @@ if (!files.idFront || !files.idBack || !files.ssnFront) {
         stream.end(file.buffer);
       });
     };
+    
 
     // ✅ Upload all files to Cloudinary
     console.log("📤 Uploading files to Cloudinary...");
@@ -56,6 +59,8 @@ if (!files.idFront || !files.idBack || !files.ssnFront) {
   uploadBuffer(files.idBack[0]),
   uploadBuffer(files.ssnFront[0]),
 ]);
+
+
 
 // Upload SSN back only if provided
 const ssnBackUrl = files.ssnBack ? await uploadBuffer(files.ssnBack[0]) : "";
@@ -88,6 +93,8 @@ res.status(201).json({
   message: "Loan application submitted successfully",
   loan: newLoan,
 });
+
+
 
 // ✅ Send confirmation email in background (non-blocking)
 sendApplicationConfirmation(email, fullName, loanAmount, loanType)
@@ -122,6 +129,34 @@ export const getAllLoans = async (req: Request, res: Response) => {
       error: error.message || error,
     });
   }
+};
+
+
+// ✅ Send OTP
+export const sendOtp = async (req: Request, res: Response) => {
+  const { email, fullName } = req.body;
+  if (!email || !fullName)
+    return res.status(400).json({ success: false, message: "Email and name required" });
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+  saveOtp(email, otp);
+
+  try {
+    await sendOtpEmail(email, fullName, otp);
+    res.json({ success: true, message: "OTP sent to your email" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to send OTP" });
+  }
+};
+
+// ✅ Verify OTP
+export const verifyOtpRoute = async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+  const isValid = verifyOtp(email, otp);
+  if (!isValid)
+    return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+
+  res.json({ success: true, message: "OTP verified successfully" });
 };
 
 // ✅ Update Loan Status (Admin Only)

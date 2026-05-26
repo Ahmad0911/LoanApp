@@ -154,6 +154,20 @@ export const sendApprovalEmail = async (
   }
 };
 
+export const sendOtpEmail = async (email: string, name: string, otp: string) => {
+  // use however you currently send emails in this file
+  await transporter.sendMail({
+    to: email,
+    subject: "Your Sterling & Co Verification Code",
+    html: `
+      <h2>Hello ${name},</h2>
+      <p>Your OTP verification code is:</p>
+      <h1 style="letter-spacing:8px;color:#1d4ed8">${otp}</h1>
+      <p>This code expires in <strong>5 minutes</strong>.</p>
+    `,
+  });
+};
+
 // ✅ Send Rejection Email
 export const sendRejectionEmail = async (
   email: string,
@@ -221,4 +235,6 @@ export const sendRejectionEmail = async (
     console.error("❌ Error sending rejection email:", error);
     throw error;
   }
+
+  
 };

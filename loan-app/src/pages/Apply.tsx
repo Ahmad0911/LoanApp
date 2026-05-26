@@ -16,6 +16,7 @@ import {
 export default function Apply() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -33,9 +34,13 @@ export default function Apply() {
   });
 
   const API_BASE_URL = "https://sterling-financials-backend.onrender.com/api/loans";
-
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+  const [otpSent, setOtpSent] = useState(false);
+const [otpValue, setOtpValue] = useState("");
+const [otpVerified, setOtpVerified] = useState(false);
+const [otpLoading, setOtpLoading] = useState(false);
+const [otpError, setOtpError] = useState("");
+  
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -90,6 +95,32 @@ export default function Apply() {
     setIsSubmitting(false);
   }
 };
+
+  const nextStepWithOtp = async () => {
+    if (step === 1) {
+      if (!otpVerified) {
+        // Send OTP first
+        setOtpLoading(true);
+        setOtpError("");
+        try {
+          const res = await fetch(`${API_BASE_URL}/send-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: formData.email, fullName: formData.fullName }),
+          });
+          const data = await res.json();
+          if (data.success) setOtpSent(true);
+          else setOtpError(data.message);
+        } catch {
+          setOtpError("Failed to send OTP. Try again.");
+        } finally {
+          setOtpLoading(false);
+        }
+        return; // don't advance step yet
+      }
+    }
+    setStep((prev) => Math.min(prev + 1, 4));
+  };
 
   const steps = [
     { num: 1, title: "Personal Info", icon: User },
@@ -264,7 +295,7 @@ export default function Apply() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      placeholder="+234 800 000 0000"
+                      placeholder="+1 (800) 000-0000"
                       className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     />
                   </div>
@@ -282,6 +313,56 @@ export default function Apply() {
                     />
                   </div>
                 </div>
+
+                {otpSent && !otpVerified && (
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 space-y-3">
+                    <p className="text-sm text-blue-700 font-semibold">
+                      A 6-digit code was sent to <strong>{formData.email}</strong>
+                    </p>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      placeholder="Enter OTP"
+                      value={otpValue}
+                      onChange={(e) => setOtpValue(e.target.value)}
+                      className="w-full border-2 border-blue-300 rounded-xl p-4 text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                    {otpError && <p className="text-red-500 text-sm">{otpError}</p>}
+                    <button
+                      onClick={async () => {
+                        setOtpLoading(true);
+                        setOtpError("");
+                        try {
+                          const res = await fetch(`${API_BASE_URL}/verify-otp`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email: formData.email, otp: otpValue }),
+                          });
+                          const data = await res.json();
+                          if (data.success) {
+                            setOtpVerified(true);
+                            setStep(2); // advance automatically after verification
+                          } else {
+                            setOtpError(data.message);
+                          }
+                        } catch {
+                          setOtpError("Verification failed. Try again.");
+                        } finally {
+                          setOtpLoading(false);
+                        }
+                      }}
+                      disabled={otpLoading || otpValue.length < 6}
+                      className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {otpLoading ? "Verifying..." : "Verify Code"}
+                    </button>
+                  </div>
+                )}
+                {otpVerified && (
+                  <p className="text-green-600 font-semibold flex items-center gap-2">
+                    <Check className="w-4 h-4" /> Email verified
+                  </p>
+                )}
               </div>
             )}
 
@@ -409,7 +490,7 @@ export default function Apply() {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Loan Amount (₦) *
+                    Loan Amount ($) *
                   </label>
                   <input
                     type="number"
@@ -439,7 +520,7 @@ export default function Apply() {
                     <option value="car">Car Loan</option>
                   </select>
                 </div>
-
+ 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Loan Duration *
@@ -497,7 +578,7 @@ export default function Apply() {
                       <p>
                         <strong>Amount:</strong>{" "}
                         <span className="text-green-700 font-bold text-lg bg-green-100 px-2 py-1 rounded-md">
-                          ₦{Number(formData.loanAmount).toLocaleString()}
+                          ${Number(formData.loanAmount).toLocaleString()}
                         </span>
                       </p>
                       <p>
@@ -581,7 +662,7 @@ export default function Apply() {
                 Back
               </button>
               <button
-                onClick={nextStep}
+                onClick={nextStepWithOtp}
                 className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-slate-600 text-white px-8 py-4 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all"
               >
                 Continue
