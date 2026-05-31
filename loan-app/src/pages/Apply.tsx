@@ -182,14 +182,6 @@ export default function Apply() {
     }
   };
 
-  // What the Continue / action button should show on step 1
-  const step1ButtonLabel = () => {
-    if (otpVerified) return null; // button hidden — OTP verified, already on step 2
-    if (otpSent) return null;     // button hidden — waiting for user to verify OTP
-    if (otpLoading) return "Sending...";
-    return "Send OTP & Continue";
-  };
-
   const showBottomNav = step !== 4;
 
   return (
