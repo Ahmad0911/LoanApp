@@ -1,10 +1,8 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import connectDB from "./config/db";
 import loanRoutes from "./routes/loanRoutes";
 
-dotenv.config({ path: '.env' });
 connectDB();
 
 const app = express();

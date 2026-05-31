@@ -11,12 +11,13 @@ import {
   Award,
   Upload,
   FileText,
+  Mail,
 } from "lucide-react";
 
 export default function Apply() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -34,13 +35,15 @@ export default function Apply() {
   });
 
   const API_BASE_URL = "https://sterling-financials-backend.onrender.com/api/loans";
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  // OTP state
   const [otpSent, setOtpSent] = useState(false);
-const [otpValue, setOtpValue] = useState("");
-const [otpVerified, setOtpVerified] = useState(false);
-const [otpLoading, setOtpLoading] = useState(false);
-const [otpError, setOtpError] = useState("");
-  
+  const [otpValue, setOtpValue] = useState("");
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState("");
+
+  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -53,75 +56,108 @@ const [otpError, setOtpError] = useState("");
     }
   };
 
-  const handleSubmit = async () => {
-  setIsSubmitting(true);
-  try {
-    const formPayload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) formPayload.append(key, value as string | Blob);
-    });
-
-    const response = await fetch(`${API_BASE_URL}/apply`, {
-      method: "POST",
-      body: formPayload,
-    });
-
-    const data = await response.json();
-    if (data.success) {
-      alert("🚀 Application submitted successfully! Check your email for confirmation.");
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        dob: "",
-        houseAddress: "",
-        workAddress: "",
-        idFront: null,
-        idBack: null,
-        ssnFront: null,
-        ssnBack: null,
-        loanAmount: "",
-        loanType: "",
-        loanDuration: "",
+  // Send OTP — only called when on step 1 and OTP not yet sent
+  const handleSendOtp = async () => {
+    if (!formData.email || !formData.fullName) {
+      setOtpError("Please fill in your name and email first.");
+      return;
+    }
+    setOtpLoading(true);
+    setOtpError("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, fullName: formData.fullName }),
       });
-      setStep(1);
-    } else {
-      alert("❌ Failed: " + data.message);
-    }
-  } catch (err) {
-    console.error(err);
-    alert("❌ Error submitting application.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-  const nextStepWithOtp = async () => {
-  if (step === 1) {
-    if (!otpVerified) {
-      if (otpSent) return; // OTP already sent, waiting for verification
-      setOtpLoading(true);
-      setOtpError("");
-      try {
-        const res = await fetch(`${API_BASE_URL}/send-otp`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: formData.email, fullName: formData.fullName }),
-        });
-        const data = await res.json();
-        if (data.success) setOtpSent(true);
-        else setOtpError(data.message);
-      } catch {
-        setOtpError("Failed to send OTP. Try again.");
-      } finally {
-        setOtpLoading(false);
+      const data = await res.json();
+      if (data.success) {
+        setOtpSent(true);
+      } else {
+        setOtpError(data.message || "Failed to send OTP.");
       }
-      return; // don't advance yet
+    } catch {
+      setOtpError("Failed to send OTP. Please try again.");
+    } finally {
+      setOtpLoading(false);
     }
-  }
-  // For steps 2, 3 or after OTP verified on step 1
-  setStep((prev) => Math.min(prev + 1, 4));
-};
+  };
+
+  // Verify OTP — advances to step 2 on success
+  const handleVerifyOtp = async () => {
+    if (otpValue.length < 6) return;
+    setOtpLoading(true);
+    setOtpError("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, otp: otpValue }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOtpVerified(true);
+        setStep(2); // ✅ auto-advance to step 2
+      } else {
+        setOtpError(data.message || "Invalid OTP. Please try again.");
+      }
+    } catch {
+      setOtpError("Verification failed. Please try again.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // Continue button handler for steps 2, 3 (step 1 uses Send OTP / Verify flow instead)
+  const handleContinue = () => {
+    setStep((prev) => Math.min(prev + 1, 4));
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const formPayload = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) formPayload.append(key, value as string | Blob);
+      });
+
+      const response = await fetch(`${API_BASE_URL}/apply`, {
+        method: "POST",
+        body: formPayload,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert("🚀 Application submitted successfully! Check your email for confirmation.");
+        setFormData({
+          fullName: "",
+          email: "",
+          phone: "",
+          dob: "",
+          houseAddress: "",
+          workAddress: "",
+          idFront: null,
+          idBack: null,
+          ssnFront: null,
+          ssnBack: null,
+          loanAmount: "",
+          loanType: "",
+          loanDuration: "",
+        });
+        setStep(1);
+        setOtpSent(false);
+        setOtpVerified(false);
+        setOtpValue("");
+      } else {
+        alert("❌ Failed: " + data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error submitting application.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const steps = [
     { num: 1, title: "Personal Info", icon: User },
@@ -138,18 +174,23 @@ const [otpError, setOtpError] = useState("");
 
   const getProgressColor = () => {
     switch (step) {
-      case 1:
-        return "from-blue-600 via-blue-700 to-slate-600";
-      case 2:
-        return "from-purple-600 via-blue-600 to-purple-700";
-      case 3:
-        return "from-green-500 via-blue-600 to-green-700";
-      case 4:
-        return "from-green-600 via-emerald-600 to-green-800";
-      default:
-        return "from-blue-600 via-blue-700 to-slate-600";
+      case 1: return "from-blue-600 via-blue-700 to-slate-600";
+      case 2: return "from-purple-600 via-blue-600 to-purple-700";
+      case 3: return "from-green-500 via-blue-600 to-green-700";
+      case 4: return "from-green-600 via-emerald-600 to-green-800";
+      default: return "from-blue-600 via-blue-700 to-slate-600";
     }
   };
+
+  // What the Continue / action button should show on step 1
+  const step1ButtonLabel = () => {
+    if (otpVerified) return null; // button hidden — OTP verified, already on step 2
+    if (otpSent) return null;     // button hidden — waiting for user to verify OTP
+    if (otpLoading) return "Sending...";
+    return "Send OTP & Continue";
+  };
+
+  const showBottomNav = step !== 4;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 py-12 px-4">
@@ -163,6 +204,7 @@ const [otpError, setOtpError] = useState("");
       </div>
 
       <div className="max-w-4xl mx-auto">
+        {/* Trust Badges */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           {trustBadges.map((badge, idx) => (
             <div
@@ -172,17 +214,14 @@ const [otpError, setOtpError] = useState("");
               <div className="bg-gradient-to-br from-blue-500 to-slate-500 w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
                 <badge.icon className="w-5 h-5 text-white" />
               </div>
-              <span className="text-sm font-semibold text-gray-700">
-                {badge.text}
-              </span>
+              <span className="text-sm font-semibold text-gray-700">{badge.text}</span>
             </div>
           ))}
         </div>
 
         <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-blue-100">
-          <div
-            className={`bg-gradient-to-r ${getProgressColor()} p-8 transition-all duration-500`}
-          >
+          {/* Step Progress Header */}
+          <div className={`bg-gradient-to-r ${getProgressColor()} p-8 transition-all duration-500`}>
             <div className="flex justify-between items-center relative">
               {steps.map((s, idx) => (
                 <div key={s.num} className="flex-1 flex items-center relative z-10">
@@ -194,11 +233,7 @@ const [otpError, setOtpError] = useState("");
                           : "bg-white/20 text-white/60"
                       }`}
                     >
-                      {step > s.num ? (
-                        <Check className="w-6 h-6" />
-                      ) : (
-                        <s.icon className="w-6 h-6" />
-                      )}
+                      {step > s.num ? <Check className="w-6 h-6" /> : <s.icon className="w-6 h-6" />}
                     </div>
                     <span
                       className={`mt-3 text-xs md:text-sm font-semibold ${
@@ -214,164 +249,194 @@ const [otpError, setOtpError] = useState("");
                         step > s.num ? "bg-white" : "bg-white/20"
                       }`}
                       style={{ marginLeft: "28px" }}
-                    ></div>
+                    />
                   )}
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Form Body */}
           <div className="p-8 md:p-12">
+
+            {/* ── STEP 1: Personal Info ── */}
             {step === 1 && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  Personal Information
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  Please provide your personal details
-                </p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Personal Information</h2>
+                <p className="text-gray-600 mb-6">Please provide your personal details</p>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Full Name *
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name *</label>
                   <input
                     type="text"
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleInputChange}
                     placeholder="John Doe"
-                    className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    disabled={otpSent}
+                    className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Date of Birth *
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Date of Birth *</label>
                   <input
                     type="date"
                     name="dob"
                     value={formData.dob}
                     onChange={handleInputChange}
-                    className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    disabled={otpSent}
+                    className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-50"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    House Address *
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">House Address *</label>
                   <input
                     type="text"
                     name="houseAddress"
                     value={formData.houseAddress}
                     onChange={handleInputChange}
                     placeholder="123 Main Street"
-                    className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    disabled={otpSent}
+                    className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Work Address *
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Work Address *</label>
                   <input
                     type="text"
                     name="workAddress"
                     value={formData.workAddress}
                     onChange={handleInputChange}
                     placeholder="Company Name, City"
-                    className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    disabled={otpSent}
+                    className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Phone Number *
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
                     <input
                       type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
                       placeholder="+1 (800) 000-0000"
-                      className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      disabled={otpSent}
+                      className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Email Address *
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="you@example.com"
-                      className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      disabled={otpSent}
+                      className="w-full border-2 border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-500"
                     />
                   </div>
                 </div>
 
+                {/* OTP Box — shown after OTP is sent, before verified */}
                 {otpSent && !otpVerified && (
-                  <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 space-y-3">
-                    <p className="text-sm text-blue-700 font-semibold">
-                      A 6-digit code was sent to <strong>{formData.email}</strong>
-                    </p>
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-5 space-y-4">
+                    <div className="flex items-center gap-2 text-blue-700">
+                      <Mail className="w-5 h-5" />
+                      <p className="text-sm font-semibold">
+                        A 6-digit code was sent to <strong>{formData.email}</strong>
+                      </p>
+                    </div>
                     <input
                       type="text"
+                      inputMode="numeric"
                       maxLength={6}
-                      placeholder="Enter OTP"
+                      placeholder="Enter 6-digit code"
                       value={otpValue}
-                      onChange={(e) => setOtpValue(e.target.value)}
+                      onChange={(e) => {
+                        setOtpValue(e.target.value.replace(/\D/g, ""));
+                        setOtpError("");
+                      }}
                       className="w-full border-2 border-blue-300 rounded-xl p-4 text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 outline-none"
                     />
-                    {otpError && <p className="text-red-500 text-sm">{otpError}</p>}
+                    {otpError && (
+                      <p className="text-red-500 text-sm font-medium">{otpError}</p>
+                    )}
                     <button
-                      onClick={async () => {
-                        setOtpLoading(true);
-                        setOtpError("");
-                        try {
-                          const res = await fetch(`${API_BASE_URL}/verify-otp`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ email: formData.email, otp: otpValue }),
-                          });
-                          const data = await res.json();
-                          if (data.success) {
-                            setOtpVerified(true);
-                            setStep(2); // advance automatically after verification
-                          } else {
-                            setOtpError(data.message);
-                          }
-                        } catch {
-                          setOtpError("Verification failed. Try again.");
-                        } finally {
-                          setOtpLoading(false);
-                        }
-                      }}
+                      onClick={handleVerifyOtp}
                       disabled={otpLoading || otpValue.length < 6}
-                      className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50"
+                      className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      {otpLoading ? "Verifying..." : "Verify Code"}
+                      {otpLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Verifying...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4" />
+                          Verify Code
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setOtpSent(false);
+                        setOtpValue("");
+                        setOtpError("");
+                      }}
+                      className="w-full text-sm text-blue-600 hover:underline"
+                    >
+                      ← Change email or resend
                     </button>
                   </div>
                 )}
+
+                {/* Verified badge */}
                 {otpVerified && (
                   <p className="text-green-600 font-semibold flex items-center gap-2">
                     <Check className="w-4 h-4" /> Email verified
                   </p>
                 )}
+
+                {/* Send OTP button — only shown before OTP is sent */}
+                {!otpSent && !otpVerified && (
+                  <div className="pt-2">
+                    {otpError && (
+                      <p className="text-red-500 text-sm font-medium mb-2">{otpError}</p>
+                    )}
+                    <button
+                      onClick={handleSendOtp}
+                      disabled={otpLoading || !formData.email || !formData.fullName}
+                      className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-slate-600 text-white px-8 py-4 rounded-xl font-semibold hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
+                    >
+                      {otpLoading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Sending OTP...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="w-5 h-5" />
+                          Send OTP & Continue
+                          <ArrowRight className="w-5 h-5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
+            {/* ── STEP 2: Documents ── */}
             {step === 2 && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                  Upload Required Documents
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Upload Required Documents</h2>
                 <p className="text-gray-600 mb-6">
                   Please upload clear photos of your identification documents
                 </p>
@@ -381,12 +446,9 @@ const [otpError, setOtpError] = useState("");
                     <FileText className="w-5 h-5" />
                     ID Card / Driver's License
                   </h3>
-                  
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Front Side *
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Front Side *</label>
                       <input
                         type="file"
                         name="idFront"
@@ -396,16 +458,12 @@ const [otpError, setOtpError] = useState("");
                       />
                       {formData.idFront && (
                         <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
-                          <Check className="w-4 h-4" />
-                          {formData.idFront.name}
+                          <Check className="w-4 h-4" /> {formData.idFront.name}
                         </p>
                       )}
                     </div>
-
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Back Side *
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Back Side *</label>
                       <input
                         type="file"
                         name="idBack"
@@ -415,8 +473,7 @@ const [otpError, setOtpError] = useState("");
                       />
                       {formData.idBack && (
                         <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
-                          <Check className="w-4 h-4" />
-                          {formData.idBack.name}
+                          <Check className="w-4 h-4" /> {formData.idBack.name}
                         </p>
                       )}
                     </div>
@@ -428,12 +485,9 @@ const [otpError, setOtpError] = useState("");
                     <Shield className="w-5 h-5" />
                     Social Security Card
                   </h3>
-                  
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Front Side *
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Front Side *</label>
                       <input
                         type="file"
                         name="ssnFront"
@@ -443,16 +497,12 @@ const [otpError, setOtpError] = useState("");
                       />
                       {formData.ssnFront && (
                         <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
-                          <Check className="w-4 h-4" />
-                          {formData.ssnFront.name}
+                          <Check className="w-4 h-4" /> {formData.ssnFront.name}
                         </p>
                       )}
                     </div>
-
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Back Side (Optional)
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Back Side (Optional)</label>
                       <input
                         type="file"
                         name="ssnBack"
@@ -462,8 +512,7 @@ const [otpError, setOtpError] = useState("");
                       />
                       {formData.ssnBack && (
                         <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
-                          <Check className="w-4 h-4" />
-                          {formData.ssnBack.name}
+                          <Check className="w-4 h-4" /> {formData.ssnBack.name}
                         </p>
                       )}
                     </div>
@@ -474,7 +523,7 @@ const [otpError, setOtpError] = useState("");
                   <p className="text-sm text-amber-800 flex items-start gap-2">
                     <Upload className="w-5 h-5 flex-shrink-0 mt-0.5" />
                     <span>
-                      <strong>Tips:</strong> Ensure images are clear, well-lit, and all text is readable. 
+                      <strong>Tips:</strong> Ensure images are clear, well-lit, and all text is readable.
                       Accepted formats: JPG, PNG (max 5MB each)
                     </span>
                   </p>
@@ -482,17 +531,14 @@ const [otpError, setOtpError] = useState("");
               </div>
             )}
 
+            {/* ── STEP 3: Loan Details ── */}
             {step === 3 && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Loan Details</h2>
-                <p className="text-gray-600 mb-6">
-                  Provide details about the loan you're applying for
-                </p>
+                <p className="text-gray-600 mb-6">Provide details about the loan you're applying for</p>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Loan Amount ($) *
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Loan Amount ($) *</label>
                   <input
                     type="number"
                     name="loanAmount"
@@ -504,9 +550,7 @@ const [otpError, setOtpError] = useState("");
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Loan Type *
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Loan Type *</label>
                   <select
                     name="loanType"
                     value={formData.loanType}
@@ -521,11 +565,9 @@ const [otpError, setOtpError] = useState("");
                     <option value="car">Car Loan</option>
                   </select>
                 </div>
- 
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Loan Duration *
-                  </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Loan Duration *</label>
                   <select
                     name="loanDuration"
                     value={formData.loanDuration}
@@ -543,12 +585,11 @@ const [otpError, setOtpError] = useState("");
               </div>
             )}
 
+            {/* ── STEP 4: Review & Submit ── */}
             {step === 4 && (
               <div className="space-y-10">
                 <div className="text-center">
-                  <h2 className="text-3xl font-extrabold text-gray-800 mb-3">
-                    🧾 Review & Submit
-                  </h2>
+                  <h2 className="text-3xl font-extrabold text-gray-800 mb-3">🧾 Review & Submit</h2>
                   <p className="text-gray-500 text-lg">
                     Take a moment to review your details before submitting.
                   </p>
@@ -584,9 +625,7 @@ const [otpError, setOtpError] = useState("");
                       </p>
                       <p>
                         <strong>Duration:</strong>{" "}
-                        <span className="text-blue-700 font-semibold">
-                          {formData.loanDuration} Months
-                        </span>
+                        <span className="text-blue-700 font-semibold">{formData.loanDuration} Months</span>
                       </p>
                     </div>
                   </div>
@@ -625,49 +664,66 @@ const [otpError, setOtpError] = useState("");
                   </p>
                 </div>
 
-                <div className="flex justify-center">
-                 <button
-  onClick={handleSubmit}
-  disabled={isSubmitting}
-  className="bg-gradient-to-r from-blue-700 to-green-600 text-white px-12 py-4 rounded-2xl font-semibold hover:shadow-2xl hover:scale-105 transition-transform duration-300 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
->
-  {isSubmitting ? (
-    <>
-      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-      Processing...
-    </>
-  ) : (
-    <>
-      <FileCheck className="w-5 h-5" />
-      Submit Application
-    </>
-  )}
-</button>
+                <div className="flex justify-between gap-4">
+                  <button
+                    onClick={prevStep}
+                    className="flex items-center gap-2 px-8 py-4 rounded-xl font-semibold bg-slate-100 text-gray-700 hover:bg-slate-200 hover:shadow-lg transition-all"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                    Back
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="bg-gradient-to-r from-blue-700 to-green-600 text-white px-12 py-4 rounded-2xl font-semibold hover:shadow-2xl hover:scale-105 transition-transform duration-300 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <FileCheck className="w-5 h-5" />
+                        Submit Application
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             )}
           </div>
 
-          {step !== 4 && (
+          {/* Bottom Nav — Back + Continue for steps 2 & 3 only */}
+          {showBottomNav && step !== 1 && (
             <div className="px-8 md:px-12 pb-8 flex justify-between gap-4">
               <button
                 onClick={prevStep}
-                disabled={step === 1}
-                className={`flex items-center gap-2 px-8 py-4 rounded-xl font-semibold transition-all ${
-                  step === 1
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-slate-100 text-gray-700 hover:bg-slate-200 hover:shadow-lg"
-                }`}
+                className="flex items-center gap-2 px-8 py-4 rounded-xl font-semibold bg-slate-100 text-gray-700 hover:bg-slate-200 hover:shadow-lg transition-all"
               >
                 <ArrowLeft className="w-5 h-5" />
                 Back
               </button>
               <button
-                onClick={nextStepWithOtp}
+                onClick={handleContinue}
                 className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-slate-600 text-white px-8 py-4 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all"
               >
                 Continue
                 <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+
+          {/* Step 1 back button (only before OTP is sent) */}
+          {showBottomNav && step === 1 && !otpSent && (
+            <div className="px-8 md:px-12 pb-8">
+              <button
+                onClick={prevStep}
+                disabled
+                className="flex items-center gap-2 px-8 py-4 rounded-xl font-semibold bg-gray-100 text-gray-400 cursor-not-allowed"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                Back
               </button>
             </div>
           )}

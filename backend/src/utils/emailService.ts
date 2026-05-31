@@ -155,8 +155,8 @@ export const sendApprovalEmail = async (
 };
 
 export const sendOtpEmail = async (email: string, name: string, otp: string) => {
-  // use however you currently send emails in this file
   await transporter.sendMail({
+    from: process.env.EMAIL_FROM || '"Sterling & Co Financials" <noreply@sterling.com>',  // ← ADD THIS
     to: email,
     subject: "Your Sterling & Co Verification Code",
     html: `
