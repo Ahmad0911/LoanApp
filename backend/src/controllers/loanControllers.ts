@@ -132,20 +132,25 @@ export const getAllLoans = async (req: Request, res: Response) => {
 };
 
 
-// ✅ Send OTP
 export const sendOtp = async (req: Request, res: Response) => {
   const { email, fullName } = req.body;
   if (!email || !fullName)
     return res.status(400).json({ success: false, message: "Email and name required" });
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
   saveOtp(email, otp);
 
   try {
     await sendOtpEmail(email, fullName, otp);
     res.json({ success: true, message: "OTP sent to your email" });
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Failed to send OTP" });
+  } catch (err: any) {
+    console.error("❌ OTP email error:", err?.message || err);
+    console.error("❌ Full error:", JSON.stringify(err, null, 2));
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to send OTP",
+      error: err?.message 
+    });
   }
 };
 
