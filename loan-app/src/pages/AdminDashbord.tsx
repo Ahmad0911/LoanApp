@@ -34,8 +34,10 @@ const AdminDashboard: React.FC = () => {
   const [modalTitle, setModalTitle] = useState<string>("");
 
   const BASE_URL = "https://sterling-financials-backend.onrender.com/api/loans";
-  const ADMIN_PASSCODE = "admin2024";
-  const ADMIN_API_KEY = "supersecretadminkey123";
+
+  // ⚠️ Change this passcode before going live
+  const ADMIN_PASSCODE = import.meta.env.VITE_ADMIN_PASSCODE || "Sterling@Admin2024!";
+  const ADMIN_API_KEY = import.meta.env.VITE_ADMIN_API_KEY || "supersecretadminkey123";
 
   const handleLogin = () => {
     if (passcode === ADMIN_PASSCODE) {
@@ -90,7 +92,7 @@ const AdminDashboard: React.FC = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Failed to update status");
 
-      setLoans(loans.map(loan => 
+      setLoans(loans.map(loan =>
         loan._id === loanId ? { ...loan, status } : loan
       ));
     } catch (err: any) {
@@ -102,7 +104,7 @@ const AdminDashboard: React.FC = () => {
 
   const deleteLoan = async (loanId: string) => {
     if (!window.confirm("Are you sure you want to delete this loan application?")) return;
-    
+
     setActionLoading(loanId);
     try {
       const response = await fetch(`${BASE_URL}/${loanId}`, {
@@ -135,12 +137,13 @@ const AdminDashboard: React.FC = () => {
   };
 
   const filteredLoans = loans.filter((loan) => {
-    const matchesSearch = loan.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      loan.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       loan.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       loan.phone.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStatus = filterStatus === "all" || loan.status === filterStatus;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -155,9 +158,9 @@ const AdminDashboard: React.FC = () => {
 
   const stats = {
     total: loans.length,
-    pending: loans.filter(l => l.status === "pending").length,
-    approved: loans.filter(l => l.status === "approved").length,
-    rejected: loans.filter(l => l.status === "rejected").length,
+    pending: loans.filter((l) => l.status === "pending").length,
+    approved: loans.filter((l) => l.status === "approved").length,
+    rejected: loans.filter((l) => l.status === "rejected").length,
     totalAmount: loans.reduce((sum, l) => sum + l.loanAmount, 0),
   };
 
@@ -181,7 +184,7 @@ const AdminDashboard: React.FC = () => {
               type="password"
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+              onKeyPress={(e) => e.key === "Enter" && handleLogin()}
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
               placeholder="Enter your passcode"
             />
@@ -212,25 +215,15 @@ const AdminDashboard: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden">
             <div className="bg-gray-100 p-4 flex justify-between items-center border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800">{modalTitle}</h3>
-              <button
-                onClick={closeImageModal}
-                className="text-gray-500 hover:text-gray-700 transition"
-              >
+              <button onClick={closeImageModal} className="text-gray-500 hover:text-gray-700 transition">
                 <X className="w-6 h-6" />
               </button>
             </div>
             <div className="p-4 bg-gray-50 flex justify-center">
-              <img 
-                src={modalImage} 
-                alt={modalTitle}
-                className="max-h-96 object-contain rounded-lg"
-              />
+              <img src={modalImage} alt={modalTitle} className="max-h-96 object-contain rounded-lg" />
             </div>
             <div className="p-4 border-t border-gray-200 flex justify-end">
-              <button
-                onClick={closeImageModal}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
+              <button onClick={closeImageModal} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                 Close
               </button>
             </div>
@@ -243,9 +236,7 @@ const AdminDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Sterling & Co Financials
-              </h1>
+              <h1 className="text-2xl font-bold text-gray-800">Sterling & Co Financials</h1>
               <p className="text-sm text-gray-500">Admin Dashboard</p>
             </div>
             <button
@@ -269,7 +260,6 @@ const AdminDashboard: React.FC = () => {
             </div>
             <p className="text-blue-100 text-sm font-medium">Total Applications</p>
           </div>
-
           <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-2">
               <Clock className="w-8 h-8 opacity-80" />
@@ -277,7 +267,6 @@ const AdminDashboard: React.FC = () => {
             </div>
             <p className="text-yellow-100 text-sm font-medium">Pending Review</p>
           </div>
-
           <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-2">
               <TrendingUp className="w-8 h-8 opacity-80" />
@@ -285,7 +274,6 @@ const AdminDashboard: React.FC = () => {
             </div>
             <p className="text-green-100 text-sm font-medium">Approved</p>
           </div>
-
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between mb-2">
               <DollarSign className="w-8 h-8 opacity-80" />
@@ -308,7 +296,6 @@ const AdminDashboard: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
@@ -319,7 +306,6 @@ const AdminDashboard: React.FC = () => {
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
             </select>
-
             <button
               onClick={fetchLoans}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition shadow-sm"
@@ -328,9 +314,9 @@ const AdminDashboard: React.FC = () => {
               Refresh
             </button>
           </div>
-
           <div className="mt-4 text-sm text-gray-600">
-            Showing <span className="font-semibold text-blue-600">{filteredLoans.length}</span> of <span className="font-semibold">{loans.length}</span> applications
+            Showing <span className="font-semibold text-blue-600">{filteredLoans.length}</span> of{" "}
+            <span className="font-semibold">{loans.length}</span> applications
           </div>
         </div>
 
@@ -341,9 +327,7 @@ const AdminDashboard: React.FC = () => {
             <p className="text-gray-600">Loading applications...</p>
           </div>
         ) : error ? (
-          <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-6 text-red-700">
-            {error}
-          </div>
+          <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-6 text-red-700">{error}</div>
         ) : filteredLoans.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-md p-12 text-center">
             <p className="text-gray-500 text-lg">No loan applications found.</p>
@@ -368,10 +352,10 @@ const AdminDashboard: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="font-semibold text-gray-900">{loan.fullName}</div>
                         <div className="text-xs text-gray-500">
-                          {new Date(loan.createdAt).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric', 
-                            year: 'numeric' 
+                          {new Date(loan.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
                           })}
                         </div>
                       </td>
@@ -380,16 +364,14 @@ const AdminDashboard: React.FC = () => {
                         <div className="text-xs text-gray-500">{loan.phone}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-gray-900">
-                          ₦{loan.loanAmount.toLocaleString()}
-                        </div>
+                        <div className="text-sm font-semibold text-gray-900">₦{loan.loanAmount.toLocaleString()}</div>
                         <div className="text-xs text-gray-500">
                           {loan.loanType} • {loan.loanDuration} months
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(loan.status || 'pending')}`}>
-                          {(loan.status || 'pending').toUpperCase()}
+                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(loan.status || "pending")}`}>
+                          {(loan.status || "pending").toUpperCase()}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -398,43 +380,40 @@ const AdminDashboard: React.FC = () => {
                             onClick={() => openImageModal(loan.idFront, `${loan.fullName} - ID Front`)}
                             className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-medium hover:bg-blue-50 px-2 py-1 rounded transition"
                           >
-                            <Eye className="w-3 h-3" />
-                            ID Front
+                            <Eye className="w-3 h-3" /> ID Front
                           </button>
                           <button
                             onClick={() => openImageModal(loan.idBack, `${loan.fullName} - ID Back`)}
                             className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-medium hover:bg-blue-50 px-2 py-1 rounded transition"
                           >
-                            <Eye className="w-3 h-3" />
-                            ID Back
+                            <Eye className="w-3 h-3" /> ID Back
                           </button>
                           <button
                             onClick={() => openImageModal(loan.ssnFront, `${loan.fullName} - SSN Front`)}
                             className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs font-medium hover:bg-blue-50 px-2 py-1 rounded transition"
                           >
-                            <Eye className="w-3 h-3" />
-                            SSN
+                            <Eye className="w-3 h-3" /> SSN
                           </button>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          {loan.status !== 'approved' && (
+                          {loan.status !== "approved" && (
                             <button
-                              onClick={() => updateLoanStatus(loan._id, 'approved')}
+                              onClick={() => updateLoanStatus(loan._id, "approved")}
                               disabled={actionLoading === loan._id}
                               className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              {actionLoading === loan._id ? '...' : 'Approve'}
+                              {actionLoading === loan._id ? "..." : "Approve"}
                             </button>
                           )}
-                          {loan.status !== 'rejected' && (
+                          {loan.status !== "rejected" && (
                             <button
-                              onClick={() => updateLoanStatus(loan._id, 'rejected')}
+                              onClick={() => updateLoanStatus(loan._id, "rejected")}
                               disabled={actionLoading === loan._id}
                               className="px-3 py-1.5 bg-yellow-600 text-white rounded-lg text-xs font-medium hover:bg-yellow-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              {actionLoading === loan._id ? '...' : 'Reject'}
+                              {actionLoading === loan._id ? "..." : "Reject"}
                             </button>
                           )}
                           <button
@@ -442,7 +421,7 @@ const AdminDashboard: React.FC = () => {
                             disabled={actionLoading === loan._id}
                             className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {actionLoading === loan._id ? '...' : 'Delete'}
+                            {actionLoading === loan._id ? "..." : "Delete"}
                           </button>
                         </div>
                       </td>

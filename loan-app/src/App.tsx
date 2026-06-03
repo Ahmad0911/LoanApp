@@ -5,7 +5,7 @@ import Loan from "./pages/Loan";
 import Apply from "./pages/Apply";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import AdminDashboard from "./pages/AdminDashbord"; // route still accessible via URL
+import AdminDashboard from "./pages/AdminDashbord";
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -20,11 +20,11 @@ export default function App() {
 
   return (
     <>
-      {/* Fixed Glass Navbar with Dark Blue-Silver Gradient */}
+      {/* Fixed Glass Navbar */}
       <nav className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-blue-600/90 via-blue-700/90 to-slate-600/90 backdrop-blur-lg border-b border-white/20 shadow-lg">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           
-          {/* Logo with Image */}
+          {/* Logo */}
           <Link 
             to="/" 
             className="flex items-center gap-3 text-2xl font-bold text-white tracking-wide hover:opacity-90 transition-opacity"
@@ -90,11 +90,9 @@ export default function App() {
         <Route path="/apply" element={<Apply />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        {/* Admin route still accessible via URL */}
-        <Route path="/admin" element={<AdminDashboard />} />
+        {/* Hidden admin route - not linked in navbar */}
+        <Route path="/sterling-admin-portal" element={<AdminDashboard />} />
       </Routes>
-
-
     </>
   );
 }
