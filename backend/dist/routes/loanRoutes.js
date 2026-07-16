@@ -22,5 +22,7 @@ router.get("/", authAdmin_1.verifyAdminKey, loanControllers_1.getAllLoans);
 router.patch("/:id/status", authAdmin_1.verifyAdminKey, loanControllers_1.updateLoanStatus);
 // ✅ Admin: Delete a loan application (Protected)
 router.delete("/:id", authAdmin_1.verifyAdminKey, loanControllers_1.deleteLoan);
+router.post("/send-otp", loanControllers_1.sendOtp);
+router.post("/verify-otp", loanControllers_1.verifyOtpRoute);
 exports.default = router;
 //# sourceMappingURL=loanRoutes.js.map

@@ -1,26 +1,30 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendRejectionEmail = exports.sendApprovalEmail = exports.sendApplicationConfirmation = void 0;
+exports.sendRejectionEmail = exports.sendApprovalEmail = exports.sendApplicationConfirmation = exports.sendOtpEmail = void 0;
 // 📂 src/utils/emailService.ts
-const nodemailer_1 = __importDefault(require("nodemailer"));
-// ✅ Create reusable transporter
-const transporter = nodemailer_1.default.createTransport({
-    host: process.env.EMAIL_HOST || "smtp.gmail.com",
-    port: Number(process.env.EMAIL_PORT) || 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+const resend_1 = require("resend");
+const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
+const FROM = "Sterling & Co Financials <onboarding@resend.dev>";
+// ✅ Send OTP Email
+const sendOtpEmail = async (email, name, otp) => {
+    await resend.emails.send({
+        from: FROM,
+        to: email,
+        subject: "Your Sterling & Co Verification Code",
+        html: `
+      <h2>Hello ${name},</h2>
+      <p>Your OTP verification code is:</p>
+      <h1 style="letter-spacing:8px;color:#1d4ed8">${otp}</h1>
+      <p>This code expires in <strong>5 minutes</strong>.</p>
+    `,
+    });
+};
+exports.sendOtpEmail = sendOtpEmail;
 // ✅ Send Application Confirmation Email
 const sendApplicationConfirmation = async (email, fullName, loanAmount, loanType) => {
     try {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Sterling & Co Financials" <noreply@sterling.com>',
+        await resend.emails.send({
+            from: FROM,
             to: email,
             subject: "Loan Application Received - Sterling & Co Financials",
             html: `
@@ -44,32 +48,24 @@ const sendApplicationConfirmation = async (email, fullName, loanAmount, loanType
             </div>
             <div class="content">
               <p>Dear <strong>${fullName}</strong>,</p>
-              
               <p>Thank you for choosing Sterling & Co Financials. We have successfully received your loan application and it is now under review.</p>
-              
               <div class="info-box">
                 <h3>📋 Application Details:</h3>
                 <p><strong>Loan Type:</strong> ${loanType}</p>
                 <p><strong>Loan Amount:</strong> $${loanAmount.toLocaleString()}</p>
                 <p><strong>Status:</strong> <span class="status-badge">PENDING REVIEW</span></p>
               </div>
-              
-              <p>Our team will review your application and get back to you within 2-3 business days. You will receive another email once a decision has been made.</p>
-              
-              <p>If you have any questions, please don't hesitate to contact us.</p>
-              
+              <p>Our team will review your application and get back to you within 2-3 business days.</p>
               <p>Best regards,<br><strong>Sterling & Co Financials Team</strong></p>
             </div>
             <div class="footer">
               <p>© ${new Date().getFullYear()} Sterling & Co Financials. All rights reserved.</p>
-              <p>This is an automated message. Please do not reply to this email.</p>
             </div>
           </div>
         </body>
         </html>
       `,
-        };
-        await transporter.sendMail(mailOptions);
+        });
         console.log(`✅ Confirmation email sent to ${email}`);
     }
     catch (error) {
@@ -81,8 +77,8 @@ exports.sendApplicationConfirmation = sendApplicationConfirmation;
 // ✅ Send Approval Email
 const sendApprovalEmail = async (email, fullName, loanAmount, loanType, loanDuration) => {
     try {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Sterling & Co Financials" <noreply@sterling.com>',
+        await resend.emails.send({
+            from: FROM,
             to: email,
             subject: "🎉 Loan Application Approved - Sterling & Co Financials",
             html: `
@@ -97,7 +93,6 @@ const sendApprovalEmail = async (email, fullName, loanAmount, loanType, loanDura
             .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #10b981; border-radius: 5px; }
             .success-badge { display: inline-block; padding: 8px 16px; background: #10b981; color: white; border-radius: 20px; font-weight: bold; }
             .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
-            .cta-button { display: inline-block; padding: 12px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
           </style>
         </head>
         <body>
@@ -108,9 +103,7 @@ const sendApprovalEmail = async (email, fullName, loanAmount, loanType, loanDura
             </div>
             <div class="content">
               <p>Dear <strong>${fullName}</strong>,</p>
-              
               <p>We are pleased to inform you that your loan application has been <strong>APPROVED</strong>! 🎊</p>
-              
               <div class="info-box">
                 <h3>✅ Approved Loan Details:</h3>
                 <p><strong>Loan Type:</strong> ${loanType}</p>
@@ -118,16 +111,7 @@ const sendApprovalEmail = async (email, fullName, loanAmount, loanType, loanDura
                 <p><strong>Duration:</strong> ${loanDuration}</p>
                 <p><strong>Status:</strong> <span class="success-badge">APPROVED</span></p>
               </div>
-              
-              <p><strong>Next Steps:</strong></p>
-              <ul>
-                <li>Our team will contact you within 24 hours to discuss the terms and conditions</li>
-                <li>Please have your identification documents ready</li>
-                <li>We will schedule a final verification meeting</li>
-              </ul>
-              
-              <p>Thank you for choosing Sterling & Co Financials. We look forward to serving you!</p>
-              
+              <p>Our team will contact you within 24 hours to discuss the terms and conditions.</p>
               <p>Best regards,<br><strong>Sterling & Co Financials Team</strong></p>
             </div>
             <div class="footer">
@@ -137,8 +121,7 @@ const sendApprovalEmail = async (email, fullName, loanAmount, loanType, loanDura
         </body>
         </html>
       `,
-        };
-        await transporter.sendMail(mailOptions);
+        });
         console.log(`✅ Approval email sent to ${email}`);
     }
     catch (error) {
@@ -150,8 +133,8 @@ exports.sendApprovalEmail = sendApprovalEmail;
 // ✅ Send Rejection Email
 const sendRejectionEmail = async (email, fullName, loanAmount, loanType) => {
     try {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Sterling & Co Financials" <noreply@sterling.com>',
+        await resend.emails.send({
+            from: FROM,
             to: email,
             subject: "Loan Application Update - Sterling & Co Financials",
             html: `
@@ -174,24 +157,13 @@ const sendRejectionEmail = async (email, fullName, loanAmount, loanType) => {
             </div>
             <div class="content">
               <p>Dear <strong>${fullName}</strong>,</p>
-              
-              <p>Thank you for your interest in Sterling & Co Financials. After careful review of your application, we regret to inform you that we are unable to approve your loan request at this time.</p>
-              
+              <p>After careful review, we regret to inform you that we are unable to approve your loan request at this time.</p>
               <div class="info-box">
                 <h3>📋 Application Details:</h3>
                 <p><strong>Loan Type:</strong> ${loanType}</p>
                 <p><strong>Loan Amount:</strong> $${loanAmount.toLocaleString()}</p>
               </div>
-              
-              <p><strong>What's Next?</strong></p>
-              <ul>
-                <li>You may reapply after 90 days</li>
-                <li>Consider improving your credit score or financial documentation</li>
-                <li>Contact us for guidance on strengthening future applications</li>
-              </ul>
-              
-              <p>We appreciate your understanding and encourage you to reach out if you have any questions.</p>
-              
+              <p>You may reapply after 90 days. Contact us if you have any questions.</p>
               <p>Best regards,<br><strong>Sterling & Co Financials Team</strong></p>
             </div>
             <div class="footer">
@@ -201,8 +173,7 @@ const sendRejectionEmail = async (email, fullName, loanAmount, loanType) => {
         </body>
         </html>
       `,
-        };
-        await transporter.sendMail(mailOptions);
+        });
         console.log(`✅ Rejection email sent to ${email}`);
     }
     catch (error) {

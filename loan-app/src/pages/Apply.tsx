@@ -57,32 +57,15 @@ export default function Apply() {
   };
 
   // Send OTP — only called when on step 1 and OTP not yet sent
-  const handleSendOtp = async () => {
-    if (!formData.email || !formData.fullName) {
-      setOtpError("Please fill in your name and email first.");
-      return;
-    }
-    setOtpLoading(true);
-    setOtpError("");
-    try {
-      const res = await fetch(`${API_BASE_URL}/send-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, fullName: formData.fullName }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setOtpSent(true);
-      } else {
-        setOtpError(data.message || "Failed to send OTP.");
-      }
-    } catch {
-      setOtpError("Failed to send OTP. Please try again.");
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
+  // Skip OTP entirely for now — just validate and advance to step 2
+const handleSendOtp = async () => {
+  if (!formData.email || !formData.fullName) {
+    setOtpError("Please fill in your name and email first.");
+    return;
+  }
+  setOtpVerified(true);
+  setStep(2);
+};
   // Verify OTP — advances to step 2 on success
   const handleVerifyOtp = async () => {
     if (otpValue.length < 6) return;
@@ -415,7 +398,7 @@ export default function Apply() {
                       ) : (
                         <>
                           <Mail className="w-5 h-5" />
-                          Send OTP & Continue
+                          Continue
                           <ArrowRight className="w-5 h-5" />
                         </>
                       )}

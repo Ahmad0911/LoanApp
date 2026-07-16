@@ -3,10 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteLoan = exports.updateLoanStatus = exports.getAllLoans = exports.createLoan = void 0;
+exports.deleteLoan = exports.updateLoanStatus = exports.verifyOtpRoute = exports.sendOtp = exports.getAllLoans = exports.createLoan = void 0;
 const Loan_1 = __importDefault(require("../models/Loan"));
 const cloudinary_1 = __importDefault(require("../utils/cloudinary"));
 const emailService_1 = require("../utils/emailService");
+const otpStore_1 = require("../utils/otpStore");
+const emailService_2 = require("../utils/emailService");
 // ✅ Create Loan Application
 const createLoan = async (req, res) => {
     try {
@@ -105,6 +107,36 @@ const getAllLoans = async (req, res) => {
     }
 };
 exports.getAllLoans = getAllLoans;
+const sendOtp = async (req, res) => {
+    const { email, fullName } = req.body;
+    if (!email || !fullName)
+        return res.status(400).json({ success: false, message: "Email and name required" });
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    (0, otpStore_1.saveOtp)(email, otp);
+    try {
+        await (0, emailService_2.sendOtpEmail)(email, fullName, otp);
+        res.json({ success: true, message: "OTP sent to your email" });
+    }
+    catch (err) {
+        console.error("❌ OTP email error:", err?.message || err);
+        console.error("❌ Full error:", JSON.stringify(err, null, 2));
+        res.status(500).json({
+            success: false,
+            message: "Failed to send OTP",
+            error: err?.message
+        });
+    }
+};
+exports.sendOtp = sendOtp;
+// ✅ Verify OTP
+const verifyOtpRoute = async (req, res) => {
+    const { email, otp } = req.body;
+    const isValid = (0, otpStore_1.verifyOtp)(email, otp);
+    if (!isValid)
+        return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    res.json({ success: true, message: "OTP verified successfully" });
+};
+exports.verifyOtpRoute = verifyOtpRoute;
 // ✅ Update Loan Status (Admin Only)
 const updateLoanStatus = async (req, res) => {
     try {
